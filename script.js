@@ -24,24 +24,41 @@ function displayMovies(movies) {
 }
 
 async function playTrailer(id) {
-    // 1. Open Adsterra Link in New Tab
+    // 1. Trigger the Ad (Open Adsterra in New Tab)
     window.open(ADSTERRA_URL, '_blank');
 
-    // 2. Fetch Trailer from TMDB
-    const response = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos`, {
-        headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
-    });
-    const data = await response.json();
-    const trailer = data.results.find(v => v.type === 'Trailer');
+    try {
+        // 2. Fetch Video Data from TMDB
+        const response = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`, {
+            headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+        });
+        const data = await response.json();
+        
+        // 3. Find the Official Trailer or any YouTube Video
+        const video = data.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser')) || data.results[0];
 
-    if (trailer) {
-        const container = document.getElementById('videoContainer');
-        const player = document.getElementById('player');
-        container.classList.remove('hidden');
-        player.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${trailer.key}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
-        window.scrollTo(0,0);
-    } else {
-        alert("Trailer not found!");
+        if (video && video.key) {
+            const container = document.getElementById('videoContainer');
+            const player = document.getElementById('player');
+            
+            // Show the container and inject the iFrame
+            container.classList.remove('hidden');
+            player.innerHTML = `
+                <iframe 
+                    class="w-full h-full" 
+                    src="https://www.youtube.com/embed/${video.key}?autoplay=1&rel=0" 
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen>
+                </iframe>`;
+            
+            // Scroll to top so user sees the video
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            alert("Sorry, no trailer available for this movie yet!");
+        }
+    } catch (error) {
+        console.error("Error loading video:", error);
     }
 }
 
