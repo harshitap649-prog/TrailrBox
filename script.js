@@ -1,5 +1,5 @@
 const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMDIzMGFkOWJlNjY3NzFkNjg5MDcwMjNmY2M1MGQ2YiIsIm5iZiI6MTc3NjM1MjE4Ny4xMjMwMDAxLCJzdWIiOiI2OWUwZmJiYjEzMTBhMjE0OWFiODAyODgiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.wQk9SRcq_k3t-QRA4p0mQyrj241W9g1fE4b_6pNXvpE";
-const ADSTERRA_URL = "https://www.google.com"; // Replace with your Adsterra Direct Link
+const ADSTERRA_URL = "https://www.profitablecpmratenetwork.com/e09vd63e2?key=aaed340d748709ed33b85743a2ea6b70";
 
 async function fetchMovies(query = '') {
     const url = query 
