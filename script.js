@@ -24,6 +24,23 @@ async function fetchMovies(query = '') {
         headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
     });
     const data = await response.json();
+    
+    // Handle search visibility and heading
+    if (query.trim()) {
+        // Hide favorites and trending sections during search
+        document.getElementById('favoritesSection').classList.add('hidden');
+        document.getElementById('gridTitle').classList.add('hidden');
+        
+        // Show search results heading
+        document.getElementById('gridTitle').textContent = `Search Results for "${query}"`;
+        document.getElementById('gridTitle').classList.remove('hidden');
+    } else {
+        // Show favorites and trending sections when not searching
+        updateFavoritesSection();
+        document.getElementById('gridTitle').textContent = 'Trending Now';
+        document.getElementById('gridTitle').classList.remove('hidden');
+    }
+    
     displayMovies(data.results);
 }
 
@@ -192,9 +209,16 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
     installAppBtn.classList.add('hidden');
 }
 
-document.getElementById('searchInput').onkeypress = (e) => {
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    if (e.target.value.trim() === '') {
+        // Clear search and show original sections
+        fetchMovies('');
+    }
+});
+
+document.getElementById('searchInput').addEventListener('keypress', (e) => {
     if(e.key === 'Enter') fetchMovies(e.target.value);
-};
+});
 
 // Favorites System
 function toggleFavorite(event, movieId) {
