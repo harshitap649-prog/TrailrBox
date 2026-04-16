@@ -1,6 +1,10 @@
 const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkMDIzMGFkOWJlNjY3NzFkNjg5MDcwMjNmY2M1MGQ2YiIsIm5iZiI6MTc3NjM1MjE4Ny4xMjMwMDAxLCJzdWIiOiI2OWUwZmJiYjEzMTBhMjE0OWFiODAyODgiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.wQk9SRcq_k3t-QRA4p0mQyrj241W9g1fE4b_6pNXvpE";
 const ADSTERRA_URL = "https://www.profitablecpmratenetwork.com/vd0mz5ay5?key=74b5dbb7604fc1c7564f9954b7231af1";
 
+// PWA Installation Variables
+let deferredPrompt;
+const installAppBtn = document.getElementById('installAppBtn');
+
 async function fetchMovies(query = '') {
     const url = query 
         ? `https://api.themoviedb.org/3/search/movie?query=${query}`
@@ -109,6 +113,48 @@ document.getElementById('closePlayer').onclick = () => {
     document.getElementById('videoContainer').classList.add('hidden');
     document.getElementById('player').innerHTML = '';
 };
+
+// PWA Installation Logic
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    
+    // Show the install button
+    installAppBtn.classList.remove('hidden');
+});
+
+// Handle the install button click
+installAppBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    // We've used the prompt, and can't use it again, throw it away
+    deferredPrompt = null;
+    
+    // Hide the install button
+    installAppBtn.classList.add('hidden');
+    
+    console.log(`User response to the install prompt: ${outcome}`);
+});
+
+// Hide install button if app is already installed
+window.addEventListener('appinstalled', () => {
+    installAppBtn.classList.add('hidden');
+    console.log('PWA was installed');
+});
+
+// Check if app is already in standalone mode (already installed)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+    installAppBtn.classList.add('hidden');
+}
 
 document.getElementById('searchInput').onkeypress = (e) => {
     if(e.key === 'Enter') fetchMovies(e.target.value);
