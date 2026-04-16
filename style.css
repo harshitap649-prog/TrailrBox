@@ -1,0 +1,17 @@
+body {
+    background-color: #000;
+}
+
+#movieGrid div {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+#movieGrid div:hover {
+    transform: scale(1.05);
+}
+
+.movie-card img {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
