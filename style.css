@@ -67,6 +67,106 @@ body {
     }
 }
 
+/* Movie Card Enhancements */
+.movie-card {
+    position: relative;
+    transition: transform 0.2s ease-in-out;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-card img {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* Rating Badge Styling */
+.movie-card .absolute.bottom-2.left-2 {
+    backdrop-filter: blur(4px);
+}
+
+/* Heart Icon Animation */
+.movie-card button:hover {
+    transform: scale(1.1);
+}
+
+.movie-card button {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Heart Icon Pulse Animation */
+@keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.movie-card .text-red-600 {
+    animation: heartPulse 0.3s ease-in-out;
+}
+
+/* Movie Details Modal Styling */
+#movieDetailsModal {
+    backdrop-filter: blur(8px);
+}
+
+#detailsContent {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#detailsContent::-webkit-scrollbar {
+    width: 6px;
+}
+
+#detailsContent::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 3px;
+}
+
+#detailsContent::-webkit-scrollbar-thumb {
+    background: #E50914;
+    border-radius: 3px;
+}
+
+/* Section Headers */
+.favorites-section h2,
+.recent-section h2 {
+    position: relative;
+    padding-left: 12px;
+}
+
+.favorites-section h2::before,
+.recent-section h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: #E50914;
+    border-radius: 2px;
+}
+
+/* Grid Sections Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#favoritesSection,
+#recentSection {
+    animation: slideIn 0.5s ease-out;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     #cinemaPlayer iframe {
@@ -79,5 +179,28 @@ body {
     
     #interstitialOverlay .text-3xl {
         font-size: 2rem;
+    }
+    
+    .movie-card .absolute.bottom-2.left-2 {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .movie-card button {
+        padding: 0.5rem;
+    }
+    
+    #detailsContent {
+        padding: 1rem;
+    }
+    
+    #detailsContent .flex {
+        flex-direction: column;
+    }
+    
+    #detailsContent img {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
     }
 }

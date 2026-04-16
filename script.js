@@ -5,6 +5,16 @@ const ADSTERRA_URL = "https://www.profitablecpmratenetwork.com/vd0mz5ay5?key=74b
 let deferredPrompt;
 const installAppBtn = document.getElementById('installAppBtn');
 
+// Local Storage Management
+const STORAGE_KEYS = {
+    favorites: 'trailrbox_favorites',
+    watchHistory: 'trailrbox_watch_history'
+};
+
+// Initialize storage
+let favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.favorites) || '[]');
+let watchHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.watchHistory) || '[]');
+
 async function fetchMovies(query = '') {
     const url = query 
         ? `https://api.themoviedb.org/3/search/movie?query=${query}`
@@ -20,8 +30,31 @@ async function fetchMovies(query = '') {
 function displayMovies(movies) {
     const grid = document.getElementById('movieGrid');
     grid.innerHTML = movies.map(movie => `
-        <div class="movie-card" onclick="playTrailer(${movie.id})">
-            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">
+        <div class="movie-card relative group cursor-pointer" onclick="playTrailer(${movie.id})">
+            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" class="w-full rounded-lg">
+            
+            <!-- Rating Badge -->
+            <div class="absolute bottom-2 left-2 bg-black bg-opacity-75 px-2 py-1 rounded flex items-center gap-1">
+                <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span class="text-xs text-white">${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>
+            </div>
+            
+            <!-- Heart Icon for Favorites -->
+            <button onclick="toggleFavorite(event, ${movie.id})" class="absolute top-2 right-2 bg-black bg-opacity-75 p-1.5 rounded-full hover:bg-opacity-90 transition-all">
+                <svg class="w-4 h-4 ${favorites.includes(movie.id) ? 'text-red-600' : 'text-white'}" fill="${favorites.includes(movie.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+            </button>
+            
+            <!-- Info Button -->
+            <button onclick="showMovieDetails(event, ${movie.id})" class="absolute bottom-2 right-2 bg-black bg-opacity-75 p-1.5 rounded-full hover:bg-opacity-90 transition-all">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </button>
+            
             <p class="text-xs mt-2 truncate font-medium">${movie.title}</p>
         </div>
     `).join('');
@@ -60,6 +93,9 @@ async function playTrailer(id) {
 
 async function showVideoInCinema(id) {
     try {
+        // Add to watch history
+        addToWatchHistory(id);
+        
         // Fetch Video Data from TMDB
         const response = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`, {
             headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
@@ -159,5 +195,203 @@ if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.
 document.getElementById('searchInput').onkeypress = (e) => {
     if(e.key === 'Enter') fetchMovies(e.target.value);
 };
+
+// Favorites System
+function toggleFavorite(event, movieId) {
+    event.stopPropagation();
+    const index = favorites.indexOf(movieId);
+    
+    if (index > -1) {
+        favorites.splice(index, 1);
+    } else {
+        favorites.push(movieId);
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
+    updateFavoritesSection();
+    
+    // Update heart icon
+    const heartIcon = event.currentTarget.querySelector('svg');
+    if (favorites.includes(movieId)) {
+        heartIcon.classList.add('text-red-600');
+        heartIcon.classList.remove('text-white');
+        heartIcon.setAttribute('fill', 'currentColor');
+    } else {
+        heartIcon.classList.remove('text-red-600');
+        heartIcon.classList.add('text-white');
+        heartIcon.setAttribute('fill', 'none');
+    }
+}
+
+// Watch History System
+function addToWatchHistory(movieId) {
+    // Remove if already exists, then add to front
+    watchHistory = watchHistory.filter(id => id !== movieId);
+    watchHistory.unshift(movieId);
+    
+    // Keep only last 20 items
+    if (watchHistory.length > 20) {
+        watchHistory = watchHistory.slice(0, 20);
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.watchHistory, JSON.stringify(watchHistory));
+    updateRecentSection();
+}
+
+// Movie Details Modal
+async function showMovieDetails(event, movieId) {
+    event.stopPropagation();
+    
+    try {
+        const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=en-US`, {
+            headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+        });
+        const movie = await response.json();
+        
+        const creditsResponse = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`, {
+            headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+        });
+        const credits = await creditsResponse.json();
+        
+        const cast = credits.cast.slice(0, 5).map(actor => actor.name).join(', ');
+        
+        const detailsContent = document.getElementById('detailsContent');
+        detailsContent.innerHTML = `
+            <div class="flex flex-col md:flex-row gap-6">
+                <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" class="w-full md:w-48 rounded-lg">
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold mb-2">${movie.title}</h2>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            <span class="text-white">${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>
+                        </div>
+                        <span class="text-gray-400">${movie.runtime ? `${movie.runtime} min` : 'N/A'}</span>
+                        <span class="text-gray-400">${new Date(movie.release_date).getFullYear()}</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">${movie.overview || 'No overview available.'}</p>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold mb-2">Cast</h3>
+                        <p class="text-gray-300">${cast || 'Cast information not available.'}</p>
+                    </div>
+                    <button onclick="playTrailer(${movie.id})" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors">
+                        Watch Trailer
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('movieDetailsModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error loading movie details:', error);
+        alert('Error loading movie details. Please try again.');
+    }
+}
+
+// Update UI Sections
+function updateFavoritesSection() {
+    const section = document.getElementById('favoritesSection');
+    const grid = document.getElementById('favoritesGrid');
+    
+    if (favorites.length > 0) {
+        section.classList.remove('hidden');
+        // Fetch and display favorite movies
+        fetchFavoriteMovies();
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+function updateRecentSection() {
+    const section = document.getElementById('recentSection');
+    const grid = document.getElementById('recentGrid');
+    
+    if (watchHistory.length > 0) {
+        section.classList.remove('hidden');
+        // Fetch and display recent movies
+        fetchRecentMovies();
+    } else {
+        section.classList.add('hidden');
+    }
+}
+
+async function fetchFavoriteMovies() {
+    const grid = document.getElementById('favoritesGrid');
+    const moviePromises = favorites.map(id => 
+        fetch(`https://api.themoviedb.org/3/movie/${id}`, {
+            headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+        }).then(res => res.json())
+    );
+    
+    try {
+        const movies = await Promise.all(moviePromises);
+        displayMovieGrid(movies, grid);
+    } catch (error) {
+        console.error('Error fetching favorites:', error);
+    }
+}
+
+async function fetchRecentMovies() {
+    const grid = document.getElementById('recentGrid');
+    const moviePromises = watchHistory.map(id => 
+        fetch(`https://api.themoviedb.org/3/movie/${id}`, {
+            headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
+        }).then(res => res.json())
+    );
+    
+    try {
+        const movies = await Promise.all(moviePromises);
+        displayMovieGrid(movies, grid);
+    } catch (error) {
+        console.error('Error fetching recent movies:', error);
+    }
+}
+
+function displayMovieGrid(movies, gridElement) {
+    gridElement.innerHTML = movies.map(movie => `
+        <div class="movie-card relative group cursor-pointer" onclick="playTrailer(${movie.id})">
+            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" class="w-full rounded-lg">
+            
+            <!-- Rating Badge -->
+            <div class="absolute bottom-2 left-2 bg-black bg-opacity-75 px-2 py-1 rounded flex items-center gap-1">
+                <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span class="text-xs text-white">${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</span>
+            </div>
+            
+            <!-- Heart Icon for Favorites -->
+            <button onclick="toggleFavorite(event, ${movie.id})" class="absolute top-2 right-2 bg-black bg-opacity-75 p-1.5 rounded-full hover:bg-opacity-90 transition-all">
+                <svg class="w-4 h-4 ${favorites.includes(movie.id) ? 'text-red-600' : 'text-white'}" fill="${favorites.includes(movie.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+            </button>
+            
+            <!-- Info Button -->
+            <button onclick="showMovieDetails(event, ${movie.id})" class="absolute bottom-2 right-2 bg-black bg-opacity-75 p-1.5 rounded-full hover:bg-opacity-90 transition-all">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </button>
+            
+            <p class="text-xs mt-2 truncate font-medium">${movie.title}</p>
+        </div>
+    `).join('');
+}
+
+// Modal Event Listeners
+document.getElementById('closeDetails').onclick = () => {
+    document.getElementById('movieDetailsModal').classList.add('hidden');
+};
+
+document.getElementById('searchInput').onkeypress = (e) => {
+    if(e.key === 'Enter') fetchMovies(e.target.value);
+};
+
+// Initialize UI sections on load
+updateFavoritesSection();
+updateRecentSection();
 
 fetchMovies();

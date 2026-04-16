@@ -16,9 +16,9 @@
     <nav class="p-4 flex justify-between items-center border-b border-gray-800 sticky top-0 bg-black z-50">
         <h1 class="text-2xl font-bold text-red-600 tracking-tighter">TRAILRBOX</h1>
         <div class="flex items-center gap-3">
-            <button id="installAppBtn" class="hidden border border-red-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors text-sm">
+            <button id="installAppBtn" class="hidden bg-transparent border border-red-600 text-red-600 px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all duration-300 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                 </svg>
                 <span class="hidden sm:inline">Install App</span>
             </button>
@@ -63,6 +63,22 @@
         </div>
     </div>
 
+    <!-- Movie Details Modal -->
+    <div id="movieDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[9997] flex items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="relative">
+                <button id="closeDetails" class="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-lg transition-colors z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div id="detailsContent" class="p-6">
+                    <!-- Movie details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Legacy Video Container (kept for compatibility) -->
     <div id="videoContainer" class="hidden w-full aspect-video bg-gray-900 relative">
         <div id="player"></div>
@@ -70,8 +86,23 @@
     </div>
 
     <main class="p-4">
+        <!-- My Favorites Section -->
+        <div id="favoritesSection" class="hidden mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-red-600">My Favorites</h2>
+            <div id="favoritesGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-x-auto">
+            </div>
+        </div>
+
+        <!-- Trending Now Section -->
         <h2 class="text-lg font-semibold mb-4 text-gray-400" id="gridTitle">Trending Now</h2>
         <div id="movieGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        </div>
+
+        <!-- Recently Viewed Section -->
+        <div id="recentSection" class="hidden mt-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-400">Recently Viewed</h2>
+            <div id="recentGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-x-auto">
+            </div>
         </div>
     </main>
 
