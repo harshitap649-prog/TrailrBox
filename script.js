@@ -24,44 +24,87 @@ function displayMovies(movies) {
 }
 
 async function playTrailer(id) {
-    // 1. Trigger the Ad (Open Adsterra in New Tab)
+    // 1. Show Interstitial Overlay
+    const overlay = document.getElementById('interstitialOverlay');
+    const countdown = document.getElementById('countdown');
+    const progressBar = document.getElementById('progressBar');
+    
+    overlay.classList.remove('hidden');
+    
+    // 2. Trigger the Ad (Open Adsterra in New Tab)
     window.open(ADSTERRA_URL, '_blank');
+    
+    // 3. Start Countdown Timer
+    let count = 5;
+    countdown.textContent = count;
+    progressBar.style.width = '0%';
+    
+    const countdownInterval = setInterval(() => {
+        count--;
+        countdown.textContent = count;
+        progressBar.style.width = `${(5 - count) * 20}%`;
+        
+        if (count <= 0) {
+            clearInterval(countdownInterval);
+            overlay.classList.add('hidden');
+            
+            // 4. Fetch and Show Video in Cinema Mode
+            showVideoInCinema(id);
+        }
+    }, 1000);
+}
 
+async function showVideoInCinema(id) {
     try {
-        // 2. Fetch Video Data from TMDB
+        // Fetch Video Data from TMDB
         const response = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`, {
             headers: { Authorization: `Bearer ${TMDB_TOKEN}` }
         });
         const data = await response.json();
         
-        // 3. Find the Official Trailer or any YouTube Video
+        // Find the Official Trailer or any YouTube Video
         const video = data.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser')) || data.results[0];
 
         if (video && video.key) {
-            const container = document.getElementById('videoContainer');
-            const player = document.getElementById('player');
+            const cinemaModal = document.getElementById('cinemaModal');
+            const cinemaPlayer = document.getElementById('cinemaPlayer');
             
-            // Show the container and inject the iFrame
-            container.classList.remove('hidden');
-            player.innerHTML = `
+            // Show cinema modal and inject the iFrame
+            cinemaModal.classList.remove('hidden');
+            cinemaPlayer.innerHTML = `
                 <iframe 
-                    class="w-full h-full" 
-                    src="https://www.youtube.com/embed/${video.key}?autoplay=1&rel=0" 
+                    src="https://www.youtube.com/embed/${video.key}?autoplay=1&rel=0&modestbranding=1&showinfo=0" 
                     frameborder="0" 
-                    allow="autoplay; encrypted-media" 
+                    allow="autoplay; encrypted-media; fullscreen" 
                     allowfullscreen>
                 </iframe>`;
-            
-            // Scroll to top so user sees the video
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             alert("Sorry, no trailer available for this movie yet!");
         }
     } catch (error) {
         console.error("Error loading video:", error);
+        alert("Error loading trailer. Please try again.");
     }
 }
 
+// Cinema Mode Event Listeners
+document.getElementById('backToHome').onclick = () => {
+    closeCinemaMode();
+};
+
+document.getElementById('closeCinema').onclick = () => {
+    closeCinemaMode();
+};
+
+function closeCinemaMode() {
+    const cinemaModal = document.getElementById('cinemaModal');
+    const cinemaPlayer = document.getElementById('cinemaPlayer');
+    
+    cinemaModal.classList.add('hidden');
+    cinemaPlayer.innerHTML = '';
+}
+
+// Legacy Video Container Event Listeners
 document.getElementById('closePlayer').onclick = () => {
     document.getElementById('videoContainer').classList.add('hidden');
     document.getElementById('player').innerHTML = '';
