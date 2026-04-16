@@ -70,7 +70,9 @@ body {
 /* Movie Card Enhancements */
 .movie-card {
     position: relative;
+    overflow: hidden;
     transition: transform 0.2s ease-in-out;
+    padding-bottom: 2rem; /* Space for title below image */
 }
 
 .movie-card:hover {
@@ -80,20 +82,55 @@ body {
 .movie-card img {
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: block;
+    width: 100%;
 }
 
-/* Rating Badge Styling */
+/* Rating Badge - Bottom Left */
 .movie-card .absolute.bottom-2.left-2 {
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
+    padding: 2px 4px;
+    border-radius: 4px;
 }
 
-/* Heart Icon Animation */
+/* Heart Icon - Top Right */
+.movie-card .absolute.top-2.right-2 {
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Info/Details Icon - Bottom Right */
+.movie-card .absolute.bottom-2.right-2 {
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Button Hover Effects */
 .movie-card button:hover {
     transform: scale(1.1);
 }
 
 .movie-card button {
     transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+}
+
+/* Movie Title - Clear spacing */
+.movie-card p {
+    margin-top: 0.5rem;
+    line-height: 1.2;
 }
 
 /* Heart Icon Pulse Animation */
