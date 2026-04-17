@@ -204,6 +204,40 @@ body {
     animation: slideIn 0.5s ease-out;
 }
 
+/* Install App Button - Solid Red Styling */
+#installAppBtn {
+    background-color: #E50914 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+}
+
+#installAppBtn:hover {
+    background-color: #b20710 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+}
+
+#installAppBtn svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+#installAppBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(229, 9, 20, 0.3);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     #cinemaPlayer iframe {
