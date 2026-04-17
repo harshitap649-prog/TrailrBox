@@ -171,16 +171,25 @@ document.getElementById('closePlayer').onclick = () => {
     document.getElementById('player').innerHTML = '';
 };
 
-// PWA Installation Logic
+// PWA Installation Logic - Enhanced with immediate hiding
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault();
+    // Only show install button if not already in standalone mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = window.navigator.standalone === true;
     
-    // Stash the event so it can be triggered later
-    deferredPrompt = e;
-    
-    // Show the install button
-    installAppBtn.classList.remove('hidden');
+    if (!isStandalone && !isIOSStandalone) {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        
+        // Show the install button only if not already installed
+        const wasInstalled = localStorage.getItem('trailrbox_pwa_installed') === 'true';
+        if (!wasInstalled) {
+            installAppBtn.classList.remove('hidden');
+        }
+    }
 });
 
 // Handle the install button click
@@ -196,40 +205,67 @@ installAppBtn.addEventListener('click', async () => {
     // We've used the prompt, and can't use it again, throw it away
     deferredPrompt = null;
     
-    // Hide the install button
+    // Hide the install button immediately
     installAppBtn.classList.add('hidden');
     
     console.log(`User response to the install prompt: ${outcome}`);
+    
+    // If user accepted, store installation status
+    if (outcome === 'accepted') {
+        localStorage.setItem('trailrbox_pwa_installed', 'true');
+    }
 });
 
-// Hide install button if app is already installed
+// Enhanced appinstalled event listener for immediate hiding
 window.addEventListener('appinstalled', () => {
+    // Hide button immediately without page refresh
+    installAppBtn.style.display = 'none';
     installAppBtn.classList.add('hidden');
-    console.log('PWA was installed successfully');
+    
+    console.log('PWA was installed successfully - hiding install button immediately');
     
     // Store installation status in localStorage
     localStorage.setItem('trailrbox_pwa_installed', 'true');
+    
+    // Clean up any remaining install prompt
+    deferredPrompt = null;
 });
 
-// Check if app is already in standalone mode (already installed)
+// Comprehensive installation status check
 function checkIfAppIsInstalled() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isIOSStandalone = window.navigator.standalone === true;
     const wasInstalled = localStorage.getItem('trailrbox_pwa_installed') === 'true';
     
+    // Hide button immediately if app is installed or running in standalone mode
     if (isStandalone || isIOSStandalone || wasInstalled) {
+        installAppBtn.style.display = 'none';
         installAppBtn.classList.add('hidden');
-        console.log('App is already installed or running in standalone mode');
+        console.log('App is installed or running in standalone mode - hiding install button');
         return true;
     }
     return false;
 }
 
-// Check installation status on page load
-checkIfAppIsInstalled();
+// Check installation status immediately on page load
+document.addEventListener('DOMContentLoaded', () => {
+    checkIfAppIsInstalled();
+});
 
-// Also check periodically for installation status changes
-setInterval(checkIfAppIsInstalled, 1000);
+// Also check on window load for additional safety
+window.addEventListener('load', () => {
+    checkIfAppIsInstalled();
+});
+
+// Listen for display mode changes
+window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+    if (e.matches) {
+        // App entered standalone mode, hide install button
+        installAppBtn.style.display = 'none';
+        installAppBtn.classList.add('hidden');
+        console.log('App entered standalone mode - hiding install button');
+    }
+});
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
     if (e.target.value.trim() === '') {

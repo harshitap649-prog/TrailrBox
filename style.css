@@ -221,6 +221,20 @@ body {
     box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
 }
 
+/* Hide Install App button in PWA standalone mode */
+@media (display-mode: standalone) {
+    #installAppBtn {
+        display: none !important;
+    }
+}
+
+/* Hide Install App button for iOS standalone mode */
+@media all and (display-mode: standalone) {
+    #installAppBtn {
+        display: none !important;
+    }
+}
+
 #installAppBtn:hover {
     background-color: #b20710 !important;
     transform: translateY(-1px);
