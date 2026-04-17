@@ -215,7 +215,7 @@ body {
     font-size: 14px;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
-    display: flex;
+    display: none; /* Hidden by default to avoid layout shifts */
     align-items: center;
     gap: 8px;
     box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);

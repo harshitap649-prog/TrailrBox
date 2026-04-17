@@ -171,24 +171,39 @@ document.getElementById('closePlayer').onclick = () => {
     document.getElementById('player').innerHTML = '';
 };
 
-// PWA Installation Logic - Enhanced with immediate hiding
+// PWA Installation Logic - Fixed with proper event handling
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Only show install button if not already in standalone mode
+    console.log('Install prompt detected - beforeinstallprompt event fired');
+    
+    // Check if app is running in standalone mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isIOSStandalone = window.navigator.standalone === true;
     
+    console.log('Standalone mode check:', { isStandalone, isIOSStandalone });
+    
+    // Only show install button if not in standalone mode and not previously installed
     if (!isStandalone && !isIOSStandalone) {
         // Prevent the mini-infobar from appearing on mobile
         e.preventDefault();
         
         // Stash the event so it can be triggered later
         deferredPrompt = e;
+        console.log('Install prompt event captured and stored in deferredPrompt');
         
-        // Show the install button only if not already installed
+        // Check if app was previously installed
         const wasInstalled = localStorage.getItem('trailrbox_pwa_installed') === 'true';
+        console.log('Previous installation status:', wasInstalled);
+        
         if (!wasInstalled) {
+            // Force show the install button
+            installAppBtn.style.display = 'flex';
             installAppBtn.classList.remove('hidden');
+            console.log('Install button shown - app can be installed');
+        } else {
+            console.log('App was previously installed - keeping button hidden');
         }
+    } else {
+        console.log('App is in standalone mode - hiding install button');
     }
 });
 
