@@ -5,6 +5,19 @@ const ADSTERRA_URL = "https://www.profitablecpmratenetwork.com/vd0mz5ay5?key=74b
 let deferredPrompt = null; // Global variable guard
 const installAppBtn = document.getElementById('installAppBtn');
 
+// Register Service Worker for Mobile PWA Support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('Service Worker registered successfully:', registration);
+            })
+            .catch((error) => {
+                console.error('Service Worker registration failed:', error);
+            });
+    });
+}
+
 // Local Storage Management
 const STORAGE_KEYS = {
     favorites: 'trailrbox_favorites',
@@ -171,10 +184,39 @@ document.getElementById('closePlayer').onclick = () => {
     document.getElementById('player').innerHTML = '';
 };
 
-// PWA Installation Logic - Simplified and Fixed
+// iOS Detection
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+// Show iOS Add to Home Screen instructions
+function showiOSInstallInstructions() {
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg z-50 text-sm max-w-sm mx-4';
+    toast.innerHTML = `
+        <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a9.001 9.001 0 01-7.432 0m9.032-4.026A9.001 9.001 0 0112 3c-4.474 0-8.268 3.12-9.032 7.326m0 0A9.001 9.001 0 0012 21c4.474 0 8.268-3.12 9.032-7.326"></path>
+            </svg>
+            <div>
+                <div class="font-semibold mb-1">Install on iOS</div>
+                <div>To install, tap the Share icon <span class="inline-block w-4 h-4 mx-1">⎋</span> and select "Add to Home Screen"</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remove toast after 8 seconds
+    setTimeout(() => {
+        toast.remove();
+    }, 8000);
+}
+
+// PWA Installation Logic - Enhanced for Mobile Support
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); // Prevent automatic prompt
-    deferredPrompt = e; // Stash the event
+    deferredPrompt = e; // Stash event
     
     // Check if app is already installed or in standalone mode
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -185,6 +227,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
     if (!isStandalone && !isIOSStandalone && !wasInstalled) {
         installAppBtn.style.display = 'flex'; // Show our custom button
         console.log('Install prompt detected - button shown');
+        
+        if (isIOS()) {
+            showiOSInstallInstructions();
+        }
     }
 });
 
