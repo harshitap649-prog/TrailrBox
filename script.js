@@ -205,13 +205,31 @@ installAppBtn.addEventListener('click', async () => {
 // Hide install button if app is already installed
 window.addEventListener('appinstalled', () => {
     installAppBtn.classList.add('hidden');
-    console.log('PWA was installed');
+    console.log('PWA was installed successfully');
+    
+    // Store installation status in localStorage
+    localStorage.setItem('trailrbox_pwa_installed', 'true');
 });
 
 // Check if app is already in standalone mode (already installed)
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-    installAppBtn.classList.add('hidden');
+function checkIfAppIsInstalled() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSStandalone = window.navigator.standalone === true;
+    const wasInstalled = localStorage.getItem('trailrbox_pwa_installed') === 'true';
+    
+    if (isStandalone || isIOSStandalone || wasInstalled) {
+        installAppBtn.classList.add('hidden');
+        console.log('App is already installed or running in standalone mode');
+        return true;
+    }
+    return false;
 }
+
+// Check installation status on page load
+checkIfAppIsInstalled();
+
+// Also check periodically for installation status changes
+setInterval(checkIfAppIsInstalled, 1000);
 
 document.getElementById('searchInput').addEventListener('input', (e) => {
     if (e.target.value.trim() === '') {
