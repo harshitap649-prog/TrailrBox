@@ -11,9 +11,13 @@ const STORAGE_KEYS = {
     watchHistory: 'trailrbox_watch_history'
 };
 
-// Initialize storage
+// Initialize storage with cleanup
 let favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.favorites) || '[]');
 let watchHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.watchHistory) || '[]');
+
+// Clean up ghost favorites (remove null/undefined entries)
+favorites = favorites.filter(id => id !== null && id !== undefined && id !== '');
+localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
 
 async function fetchMovies(query = '') {
     const url = query 
@@ -36,7 +40,7 @@ async function fetchMovies(query = '') {
         document.getElementById('gridTitle').classList.remove('hidden');
     } else {
         // Show favorites and trending sections when not searching
-        updateFavoritesSection();
+        renderFavorites();
         document.getElementById('gridTitle').textContent = 'Trending Now';
         document.getElementById('gridTitle').classList.remove('hidden');
     }
@@ -220,23 +224,75 @@ document.getElementById('searchInput').addEventListener('keypress', (e) => {
     if(e.key === 'Enter') fetchMovies(e.target.value);
 });
 
-// Favorites System
+// Favorites System - Single Source of Truth
 function toggleFavorite(event, movieId) {
     event.stopPropagation();
-    const index = favorites.indexOf(movieId);
     
+    // Update favorites array in localStorage
+    const index = favorites.indexOf(movieId);
     if (index > -1) {
         favorites.splice(index, 1);
     } else {
         favorites.push(movieId);
     }
     
+    // Save to localStorage immediately
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
-    updateFavoritesSection();
     
-    // Update heart icon
-    const heartIcon = event.currentTarget.querySelector('svg');
-    if (favorites.includes(movieId)) {
+    // Refresh all sections to maintain sync
+    renderFavorites();
+    renderAllMovieCards();
+}
+
+// Refresh favorites section
+function renderFavorites() {
+    if (favorites.length > 0) {
+        document.getElementById('favoritesSection').classList.remove('hidden');
+        fetchFavoriteMovies();
+    } else {
+        document.getElementById('favoritesSection').classList.add('hidden');
+    }
+}
+
+// Update heart icons across all movie cards
+function renderAllMovieCards() {
+    // Update trending/search movies
+    const movieGridCards = document.querySelectorAll('#movieGrid .movie-card');
+    movieGridCards.forEach(card => {
+        const heartButton = card.querySelector('button[onclick*="toggleFavorite"]');
+        if (heartButton) {
+            const movieId = parseInt(heartButton.getAttribute('onclick').match(/\d+/)[0]);
+            updateHeartIcon(heartButton, movieId);
+        }
+    });
+    
+    // Update favorites section
+    const favoritesGridCards = document.querySelectorAll('#favoritesGrid .movie-card');
+    favoritesGridCards.forEach(card => {
+        const heartButton = card.querySelector('button[onclick*="toggleFavorite"]');
+        if (heartButton) {
+            const movieId = parseInt(heartButton.getAttribute('onclick').match(/\d+/)[0]);
+            updateHeartIcon(heartButton, movieId);
+        }
+    });
+    
+    // Update recent section
+    const recentGridCards = document.querySelectorAll('#recentGrid .movie-card');
+    recentGridCards.forEach(card => {
+        const heartButton = card.querySelector('button[onclick*="toggleFavorite"]');
+        if (heartButton) {
+            const movieId = parseInt(heartButton.getAttribute('onclick').match(/\d+/)[0]);
+            updateHeartIcon(heartButton, movieId);
+        }
+    });
+}
+
+// Update individual heart icon based on localStorage
+function updateHeartIcon(heartButton, movieId) {
+    const heartIcon = heartButton.querySelector('svg');
+    const isFavorited = favorites.includes(movieId);
+    
+    if (isFavorited) {
         heartIcon.classList.add('text-red-600');
         heartIcon.classList.remove('text-white');
         heartIcon.setAttribute('fill', 'currentColor');
@@ -415,7 +471,7 @@ document.getElementById('searchInput').onkeypress = (e) => {
 };
 
 // Initialize UI sections on load
-updateFavoritesSection();
+renderFavorites();
 updateRecentSection();
 
 fetchMovies();
