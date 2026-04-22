@@ -2,6 +2,45 @@ body {
     background-color: #000;
 }
 
+/* Social Bar Ad - Bottom Right Corner */
+/* Target common social bar ad elements */
+.fixed-bottom-right {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+}
+
+/* Target potential social bar ad containers */
+[class*="social"],
+[class*="bar"],
+[class*="ad"],
+[class*="share"] {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+}
+
+/* Target any element that might be the social bar */
+div[id*="social"],
+div[id*="bar"],
+div[id*="ad"],
+div[id*="share"] {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+}
+
+/* Fallback for any dynamically created elements */
+body > div:last-child {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+}
+
 #movieGrid div {
     transition: transform 0.2s;
     cursor: pointer;
