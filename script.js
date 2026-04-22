@@ -305,6 +305,47 @@ window.addEventListener('appinstalled', () => {
     console.log('PWA was installed successfully');
 });
 
+// Social Bar Ad - Next.js Friendly Implementation
+function loadSocialBarAd() {
+    const adContainer = document.getElementById('socialBarAd');
+    
+    // Only run if container exists and is empty
+    if (adContainer && !adContainer.firstChild) {
+        try {
+            // Create configuration script
+            const configScript = document.createElement('script');
+            configScript.type = 'text/javascript';
+            configScript.innerHTML = `
+                atOptions = {
+                    'key' : '14f82a97172d2a09253c4c9851e409b2',
+                    'format' : 'js',
+                    'params' : {}
+                };
+            `;
+            
+            // Create ad script
+            const adScript = document.createElement('script');
+            adScript.type = 'text/javascript';
+            adScript.src = '//pl29218914.profitablecpmratenetwork.com/14/f8/2a/14f82a97172d2a09253c4c9851e409b2.js';
+            adScript.async = true;
+            
+            // Add scripts to container
+            adContainer.appendChild(configScript);
+            adContainer.appendChild(adScript);
+            
+            console.log('Social Bar Ad loaded successfully');
+        } catch (error) {
+            console.error('Error loading Social Bar Ad:', error);
+        }
+    }
+}
+
+// Load social bar ad after page loads
+window.addEventListener('load', () => {
+    // Delay ad loading to ensure page is fully rendered
+    setTimeout(loadSocialBarAd, 1000);
+});
+
 document.getElementById('searchInput').addEventListener('input', (e) => {
     if (e.target.value.trim() === '') {
         // Clear search and show original sections
