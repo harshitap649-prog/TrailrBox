@@ -312,6 +312,19 @@ function loadSocialBarAd() {
         return;
     }
 
+    // Protocol check - only run on http/https
+    const protocol = window.location.protocol;
+    if (!protocol.startsWith('http')) {
+        console.log('Social Bar Ad blocked: Not running on http/https protocol');
+        return;
+    }
+
+    // Origin null check - prevent CORS errors
+    if (window.location.origin === 'null') {
+        console.log('Social Bar Ad blocked: Origin is null to prevent CORS errors');
+        return;
+    }
+
     const adContainer = document.getElementById('socialBarAd');
 
     // Only run if container exists and is empty
@@ -339,6 +352,18 @@ function injectAdScripts() {
         return;
     }
 
+    // Double-check protocol and origin before loading scripts
+    const protocol = window.location.protocol;
+    if (!protocol.startsWith('http')) {
+        console.log('Social Bar Ad script injection blocked: Not http/https protocol');
+        return;
+    }
+
+    if (window.location.origin === 'null') {
+        console.log('Social Bar Ad script injection blocked: Origin is null');
+        return;
+    }
+
     // Configuration script - atOptions setup
     const configScript = document.createElement('script');
     configScript.type = 'text/javascript';
@@ -350,10 +375,10 @@ function injectAdScripts() {
         };
     `;
 
-    // Main ad script - invoke.js
+    // Main ad script - use https to avoid mixed content issues
     const adScript = document.createElement('script');
     adScript.type = 'text/javascript';
-    adScript.src = '//pl29218914.profitablecpmratenetwork.com/14/f8/2a/14f82a97172d2a09253c4c9851e409b2.js';
+    adScript.src = 'https://pl29218914.profitablecpmratenetwork.com/14/f8/2a/14f82a97172d2a09253c4c9851e409b2.js';
     adScript.async = true;
     adScript.setAttribute('data-strategy', 'afterInteractive');
 
@@ -366,12 +391,14 @@ function injectAdScripts() {
 
     adScript.onerror = (error) => {
         console.error('Social Bar Ad failed to load:', error);
-        // Optional: retry logic
+        // Optional: retry logic with exponential backoff
         setTimeout(() => {
             console.log('Retrying Social Bar Ad...');
-            adContainer.removeChild(adScript);
+            if (adContainer.contains(adScript)) {
+                adContainer.removeChild(adScript);
+            }
             adContainer.appendChild(adScript);
-        }, 2000);
+        }, 3000);
     };
 
     adContainer.appendChild(adScript);
